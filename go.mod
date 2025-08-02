@@ -1,4 +1,4 @@
-module api-go-two
+module api-go-b
 
 go 1.21
 

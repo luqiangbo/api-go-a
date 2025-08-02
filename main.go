@@ -23,7 +23,7 @@ type DelayResponse struct {
 
 func main() {
 	// 打印启动信息
-	fmt.Println("🚀 API Go Two 服务启动中...")
+	fmt.Println("🚀 API Go B 服务启动中...")
 	fmt.Println("📅 启动时间:", time.Now().Format("2006-01-02 15:04:05"))
 	
 	// 设置Gin为发布模式

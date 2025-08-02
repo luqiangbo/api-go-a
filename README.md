@@ -1,4 +1,4 @@
-# API Go Two - 延迟接口服务
+# API Go B - 延迟接口服务
 
 这是一个部署在 Vercel 上的 Golang API 服务，使用 Gin 框架提供延迟接口。
 
