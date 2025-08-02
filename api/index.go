@@ -2,6 +2,7 @@ package handler
 
 import (
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -60,41 +61,49 @@ func initRouter() {
 	})
 	
 	// 延迟接口
-	router.POST("/delay", func(c *gin.Context) {
-		var req DelayRequest
-		
-		// 解析请求体
-		if err := c.ShouldBindJSON(&req); err != nil {
+	router.GET("/delay", func(c *gin.Context) {
+		// 从查询参数获取延迟时间
+		timeStr := c.Query("time")
+		if timeStr == "" {
 			c.JSON(http.StatusBadRequest, gin.H{
-				"error": "请求参数错误: " + err.Error(),
+				"error": "缺少必需的time参数",
 			})
 			return
 		}
-		
+
+		// 将时间字符串转换为整数
+		time, err := strconv.Atoi(timeStr)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"error": "time参数必须是有效的整数",
+			})
+			return
+		}
+
 		// 验证延迟时间（Vercel 限制为 10 秒）
-		if req.Time < 0 || req.Time > 10 {
+		if time < 0 || time > 10 {
 			c.JSON(http.StatusBadRequest, gin.H{
 				"error": "延迟时间必须在0-10秒之间（Vercel 限制）",
 			})
 			return
 		}
-		
+
 		// 记录开始时间
 		startTime := time.Now()
-		
+
 		// 延迟指定时间
-		time.Sleep(time.Duration(req.Time) * time.Second)
-		
+		time.Sleep(time.Duration(time) * time.Second)
+
 		// 计算实际延迟时间
 		actualDelay := int(time.Since(startTime).Seconds())
-		
+
 		// 返回响应
 		response := DelayResponse{
 			Message:   "延迟完成！",
 			DelayTime: actualDelay,
 			Timestamp: time.Now(),
 		}
-		
+
 		c.JSON(http.StatusOK, response)
 	})
-} 
+}

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"strconv"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -54,41 +55,49 @@ func main() {
 	})
 	
 	// 延迟接口
-	r.POST("/delay", func(c *gin.Context) {
-		var req DelayRequest
-		
-		// 解析请求体
-		if err := c.ShouldBindJSON(&req); err != nil {
+	r.GET("/delay", func(c *gin.Context) {
+		// 从查询参数获取延迟时间
+		timeStr := c.Query("time")
+		if timeStr == "" {
 			c.JSON(http.StatusBadRequest, gin.H{
-				"error": "请求参数错误: " + err.Error(),
+				"error": "缺少必需的time参数",
 			})
 			return
 		}
-		
-			// 验证延迟时间（本地开发可以更长）
-	if req.Time < 0 || req.Time > 60 {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "延迟时间必须在0-60秒之间（本地开发）",
-		})
-		return
-	}
-		
+
+		// 将时间字符串转换为整数
+		delayTime, err := strconv.Atoi(timeStr)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"error": "time参数必须是有效的整数",
+			})
+			return
+		}
+
+		// 验证延迟时间（本地开发可以更长）
+		if delayTime < 0 || delayTime > 60 {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"error": "延迟时间必须在0-60秒之间（本地开发）",
+			})
+			return
+		}
+
 		// 记录开始时间
 		startTime := time.Now()
-		
+
 		// 延迟指定时间
-		time.Sleep(time.Duration(req.Time) * time.Second)
-		
+		time.Sleep(time.Duration(delayTime) * time.Second)
+
 		// 计算实际延迟时间
 		actualDelay := int(time.Since(startTime).Seconds())
-		
+
 		// 返回响应
 		response := DelayResponse{
 			Message:   "延迟完成！",
 			DelayTime: actualDelay,
 			Timestamp: time.Now(),
 		}
-		
+
 		c.JSON(http.StatusOK, response)
 	})
 	
