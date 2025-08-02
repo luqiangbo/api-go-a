@@ -1,0 +1,19 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "api/index.go",
+      "use": "@vercel/go",
+      "config": {
+        "buildCommand": "go build -o api",
+        "outputDirectory": "."
+      }
+    }
+  ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "api"
+    }
+  ]
+}
