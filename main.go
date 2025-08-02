@@ -9,6 +9,9 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// 全局路由实例
+var router *gin.Engine
+
 // DelayRequest 延迟请求结构体
 type DelayRequest struct {
 	Time int `json:"time" binding:"required"` // 延迟时间，单位秒
@@ -21,18 +24,23 @@ type DelayResponse struct {
 	Timestamp time.Time `json:"timestamp"`
 }
 
-func main() {
-	// 打印启动信息
-	fmt.Println("🚀 API Go B 服务启动中...")
-	fmt.Println("📅 启动时间:", time.Now().Format("2006-01-02 15:04:05"))
-	
+// Handler 是 Vercel 需要的导出函数
+func Handler(w http.ResponseWriter, r *http.Request) {
+	if router == nil {
+		initRouter()
+	}
+	router.ServeHTTP(w, r)
+}
+
+// initRouter 初始化路由
+func initRouter() {
 	// 设置Gin为发布模式
 	gin.SetMode(gin.ReleaseMode)
 	
-	r := gin.Default()
+	router = gin.Default()
 	
 	// 添加CORS中间件
-	r.Use(func(c *gin.Context) {
+	router.Use(func(c *gin.Context) {
 		c.Header("Access-Control-Allow-Origin", "*")
 		c.Header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
 		c.Header("Access-Control-Allow-Headers", "Origin, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
@@ -46,7 +54,7 @@ func main() {
 	})
 	
 	// 健康检查接口
-	r.GET("/", func(c *gin.Context) {
+	router.GET("/", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{
 			"message": "API服务正常运行",
 			"timestamp": time.Now(),
@@ -54,7 +62,7 @@ func main() {
 	})
 	
 	// 延迟接口
-	r.POST("/delay", func(c *gin.Context) {
+	router.POST("/delay", func(c *gin.Context) {
 		var req DelayRequest
 		
 		// 解析请求体
@@ -91,6 +99,15 @@ func main() {
 		
 		c.JSON(http.StatusOK, response)
 	})
+}
+
+func main() {
+	// 打印启动信息
+	fmt.Println("🚀 API Go B 服务启动中...")
+	fmt.Println("📅 启动时间:", time.Now().Format("2006-01-02 15:04:05"))
+	
+	// 初始化路由
+	initRouter()
 	
 	// 启动服务器
 	port := ":" + getPort()
@@ -100,7 +117,7 @@ func main() {
 	fmt.Println("   POST /delay - 延迟接口")
 	fmt.Println("⏳ 正在启动服务器...")
 	
-	err := r.Run(port)
+	err := router.Run(port)
 	if err != nil {
 		fmt.Println("❌ 服务器启动失败:", err)
 		os.Exit(1)
