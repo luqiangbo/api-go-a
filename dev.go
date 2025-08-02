@@ -65,13 +65,13 @@ func main() {
 			return
 		}
 		
-		// 验证延迟时间（本地开发可以更长）
-		if req.Time < 0 || req.Time > 60 {
-			c.JSON(http.StatusBadRequest, gin.H{
-				"error": "延迟时间必须在0-60秒之间",
-			})
-			return
-		}
+			// 验证延迟时间（本地开发可以更长）
+	if req.Time < 0 || req.Time > 60 {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "延迟时间必须在0-60秒之间（本地开发）",
+		})
+		return
+	}
 		
 		// 记录开始时间
 		startTime := time.Now()

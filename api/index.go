@@ -2,14 +2,10 @@ package handler
 
 import (
 	"net/http"
-	"os"
 	"time"
 
 	"github.com/gin-gonic/gin"
 )
-
-// 全局路由实例
-var router *gin.Engine
 
 // DelayRequest 延迟请求结构体
 type DelayRequest struct {
@@ -23,7 +19,10 @@ type DelayResponse struct {
 	Timestamp time.Time `json:"timestamp"`
 }
 
-// Handler 是 Vercel 需要的导出函数
+// 全局路由实例
+var router *gin.Engine
+
+// Handler 是 Vercel serverless 函数的主入口
 func Handler(w http.ResponseWriter, r *http.Request) {
 	if router == nil {
 		initRouter()
@@ -98,41 +97,4 @@ func initRouter() {
 		
 		c.JSON(http.StatusOK, response)
 	})
-}
-
-// 本地开发用的 main 函数（仅用于本地测试）
-// func main() {
-// 	// 打印启动信息
-// 	fmt.Println("🚀 API Go B 服务启动中...")
-// 	fmt.Println("📅 启动时间:", time.Now().Format("2006-01-02 15:04:05"))
-// 	
-// 	// 初始化路由
-// 	initRouter()
-// 	
-// 	// 启动服务器
-// 	port := ":" + getPort()
-// 	fmt.Println("🌐 服务器地址: http://localhost" + port)
-// 	fmt.Println("📋 可用接口:")
-// 	fmt.Println("   GET  /     - 健康检查")
-// 	fmt.Println("   POST /delay - 延迟接口")
-// 	fmt.Println("⏳ 正在启动服务器...")
-// 	
-// 	err := router.Run(port)
-// 	if err != nil {
-// 		fmt.Println("❌ 服务器启动失败:", err)
-// 		os.Exit(1)
-// 	}
-// }
-
-// getPort 获取端口号
-func getPort() string {
-	if port := getenv("PORT"); port != "" {
-		return port
-	}
-	return "8080"
-}
-
-// getenv 获取环境变量
-func getenv(key string) string {
-	return os.Getenv(key)
 } 

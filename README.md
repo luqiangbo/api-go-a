@@ -1,6 +1,6 @@
-# API Go B - 延迟接口服务
+# API Go B - Serverless 延迟接口服务
 
-这是一个部署在 Vercel 上的 Golang API 服务，使用 Gin 框架提供延迟接口。
+这是一个部署在 Vercel 上的 Golang Serverless 函数服务，使用 Gin 框架提供延迟接口。
 
 ## 功能特性
 
@@ -55,6 +55,18 @@
 }
 ```
 
+## 项目结构
+
+```
+api-go-b/
+├── api/
+│   └── index.go      # Vercel serverless 函数入口
+├── dev.go            # 本地开发服务器
+├── go.mod            # Go 模块配置
+├── vercel.json       # Vercel 部署配置
+└── README.md         # 项目文档
+```
+
 ## 本地开发
 
 ### 环境要求
@@ -69,12 +81,10 @@ go mod tidy
 
 ### 运行服务
 
-有多种方式启动项目：
-
-#### 1. 直接使用 go run
+#### 本地开发服务器
 
 ```bash
-go run main.go
+go run dev.go
 ```
 
 #### 2. 使用 Makefile (Linux/Mac)
