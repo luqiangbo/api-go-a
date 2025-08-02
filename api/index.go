@@ -72,7 +72,7 @@ func initRouter() {
 		}
 
 		// 将时间字符串转换为整数
-		time, err := strconv.Atoi(timeStr)
+		delayTime, err := strconv.Atoi(timeStr)
 		if err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{
 				"error": "time参数必须是有效的整数",
@@ -81,7 +81,7 @@ func initRouter() {
 		}
 
 		// 验证延迟时间（Vercel 限制为 10 秒）
-		if time < 0 || time > 10 {
+		if delayTime < 0 || delayTime > 10 {
 			c.JSON(http.StatusBadRequest, gin.H{
 				"error": "延迟时间必须在0-10秒之间（Vercel 限制）",
 			})
@@ -92,7 +92,7 @@ func initRouter() {
 		startTime := time.Now()
 
 		// 延迟指定时间
-		time.Sleep(time.Duration(time) * time.Second)
+		time.Sleep(time.Duration(delayTime) * time.Second)
 
 		// 计算实际延迟时间
 		actualDelay := int(time.Since(startTime).Seconds())
