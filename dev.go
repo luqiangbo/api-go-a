@@ -1,15 +1,13 @@
-package handler
+package main
 
 import (
+	"fmt"
 	"net/http"
 	"os"
 	"time"
 
 	"github.com/gin-gonic/gin"
 )
-
-// 全局路由实例
-var router *gin.Engine
 
 // DelayRequest 延迟请求结构体
 type DelayRequest struct {
@@ -23,23 +21,18 @@ type DelayResponse struct {
 	Timestamp time.Time `json:"timestamp"`
 }
 
-// Handler 是 Vercel 需要的导出函数
-func Handler(w http.ResponseWriter, r *http.Request) {
-	if router == nil {
-		initRouter()
-	}
-	router.ServeHTTP(w, r)
-}
-
-// initRouter 初始化路由
-func initRouter() {
+func main() {
+	// 打印启动信息
+	fmt.Println("🚀 API Go B 服务启动中...")
+	fmt.Println("📅 启动时间:", time.Now().Format("2006-01-02 15:04:05"))
+	
 	// 设置Gin为发布模式
 	gin.SetMode(gin.ReleaseMode)
 	
-	router = gin.Default()
+	r := gin.Default()
 	
 	// 添加CORS中间件
-	router.Use(func(c *gin.Context) {
+	r.Use(func(c *gin.Context) {
 		c.Header("Access-Control-Allow-Origin", "*")
 		c.Header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
 		c.Header("Access-Control-Allow-Headers", "Origin, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
@@ -53,7 +46,7 @@ func initRouter() {
 	})
 	
 	// 健康检查接口
-	router.GET("/", func(c *gin.Context) {
+	r.GET("/", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{
 			"message": "API服务正常运行",
 			"timestamp": time.Now(),
@@ -61,7 +54,7 @@ func initRouter() {
 	})
 	
 	// 延迟接口
-	router.POST("/delay", func(c *gin.Context) {
+	r.POST("/delay", func(c *gin.Context) {
 		var req DelayRequest
 		
 		// 解析请求体
@@ -72,10 +65,10 @@ func initRouter() {
 			return
 		}
 		
-		// 验证延迟时间（Vercel 限制为 10 秒）
-		if req.Time < 0 || req.Time > 10 {
+		// 验证延迟时间（本地开发可以更长）
+		if req.Time < 0 || req.Time > 60 {
 			c.JSON(http.StatusBadRequest, gin.H{
-				"error": "延迟时间必须在0-10秒之间（Vercel 限制）",
+				"error": "延迟时间必须在0-60秒之间",
 			})
 			return
 		}
@@ -98,31 +91,21 @@ func initRouter() {
 		
 		c.JSON(http.StatusOK, response)
 	})
+	
+	// 启动服务器
+	port := ":" + getPort()
+	fmt.Println("🌐 服务器地址: http://localhost" + port)
+	fmt.Println("📋 可用接口:")
+	fmt.Println("   GET  /     - 健康检查")
+	fmt.Println("   POST /delay - 延迟接口")
+	fmt.Println("⏳ 正在启动服务器...")
+	
+	err := r.Run(port)
+	if err != nil {
+		fmt.Println("❌ 服务器启动失败:", err)
+		os.Exit(1)
+	}
 }
-
-// 本地开发用的 main 函数（仅用于本地测试）
-// func main() {
-// 	// 打印启动信息
-// 	fmt.Println("🚀 API Go B 服务启动中...")
-// 	fmt.Println("📅 启动时间:", time.Now().Format("2006-01-02 15:04:05"))
-// 	
-// 	// 初始化路由
-// 	initRouter()
-// 	
-// 	// 启动服务器
-// 	port := ":" + getPort()
-// 	fmt.Println("🌐 服务器地址: http://localhost" + port)
-// 	fmt.Println("📋 可用接口:")
-// 	fmt.Println("   GET  /     - 健康检查")
-// 	fmt.Println("   POST /delay - 延迟接口")
-// 	fmt.Println("⏳ 正在启动服务器...")
-// 	
-// 	err := router.Run(port)
-// 	if err != nil {
-// 		fmt.Println("❌ 服务器启动失败:", err)
-// 		os.Exit(1)
-// 	}
-// }
 
 // getPort 获取端口号
 func getPort() string {
