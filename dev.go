@@ -22,6 +22,12 @@ type DelayResponse struct {
 	Timestamp time.Time `json:"timestamp"`
 }
 
+// DateResponse 日期响应结构体
+type DateResponse struct {
+	Date      string    `json:"date"`
+	Timestamp time.Time `json:"timestamp"`
+}
+
 func main() {
 	// 打印启动信息
 	fmt.Println("🚀 API Go A 服务启动中...")
@@ -54,6 +60,20 @@ func main() {
 		})
 	})
 	
+	// 日期接口
+	r.POST("/date", func(c *gin.Context) {
+		// 获取当前时间
+		now := time.Now()
+
+		// 返回响应
+		response := DateResponse{
+			Date:      now.Format("2006-01-02"),
+			Timestamp: now,
+		}
+
+		c.JSON(http.StatusOK, response)
+	})
+
 	// 延迟接口
 	r.GET("/delay", func(c *gin.Context) {
 		// 从查询参数获取延迟时间
@@ -107,6 +127,7 @@ func main() {
 	fmt.Println("📋 可用接口:")
 	fmt.Println("   GET  /     - 健康检查")
 	fmt.Println("   POST /delay - 延迟接口")
+	fmt.Println("   POST /date  - 日期接口")
 	fmt.Println("⏳ 正在启动服务器...")
 	
 	err := r.Run(port)
