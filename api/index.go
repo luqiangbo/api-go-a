@@ -66,10 +66,10 @@ func handleDelay(w http.ResponseWriter, r *http.Request) {
 	}
 
 	delayTime, err := strconv.Atoi(timeStr)
-	if err != nil || delayTime < 0 || delayTime > 10 {
+	if err != nil || delayTime < 0 || delayTime > 60 {
 		w.WriteHeader(http.StatusBadRequest)
 		json.NewEncoder(w).Encode(map[string]interface{}{
-			"error": "Delay time must be between 0 and 10 seconds",
+			"error": "Delay time must be between 0 and 60 seconds",
 		})
 		return
 	}
