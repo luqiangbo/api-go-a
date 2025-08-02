@@ -3,13 +3,17 @@
   "builds": [
     {
       "src": "api/index.go",
-      "use": "@vercel/go"
+      "use": "@vercel/go",
+      "config": {
+        "buildCommand": "go build -o api",
+        "outputDirectory": "."
+      }
     }
   ],
   "routes": [
     {
       "src": "/(.*)",
-      "dest": "/api/index.go"
+      "dest": "api"
     }
   ]
 }
