@@ -2,6 +2,7 @@ package handler
 
 import (
 	"encoding/json"
+	"io"
 	"net/http"
 	"strconv"
 	"time"
@@ -15,6 +16,9 @@ type DateResponse struct {
 
 // Handler 是 Vercel serverless 函数的主入口
 func Handler(w http.ResponseWriter, r *http.Request) {
+	// 设置Content-Type
+	w.Header().Set("Content-Type", "application/json")
+
 	// 设置CORS头
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	w.Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
@@ -37,23 +41,27 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 		})
 
 	case "/date":
-		// 只处理POST请求
 		if r.Method != "POST" {
-			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+			w.WriteHeader(http.StatusMethodNotAllowed)
+			json.NewEncoder(w).Encode(map[string]interface{}{
+				"error": "Method not allowed",
+			})
 			return
 		}
 
-		// 获取当前时间并返回
+		// ⚠️ 必须读取并关闭请求体以避免 Vercel 阻塞/超时
+		_, _ = io.ReadAll(r.Body)
+		_ = r.Body.Close()
+
+		// 获取当前时间
 		now := time.Now()
 		response := DateResponse{
 			Date:      now.Format("2006-01-02"),
 			Timestamp: now,
 		}
-		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(response)
 
 	case "/delay":
-		// 只处理GET请求
 		if r.Method != "GET" {
 			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 			return
@@ -62,35 +70,35 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 		// 获取延迟时间参数
 		timeStr := r.URL.Query().Get("time")
 		if timeStr == "" {
-			http.Error(w, "Missing time parameter", http.StatusBadRequest)
+			w.WriteHeader(http.StatusBadRequest)
+			json.NewEncoder(w).Encode(map[string]interface{}{
+				"error": "Missing time parameter",
+			})
 			return
 		}
 
-		// 转换延迟时间
 		delayTime, err := strconv.Atoi(timeStr)
-		if err != nil {
-			http.Error(w, "Invalid time parameter", http.StatusBadRequest)
+		if err != nil || delayTime < 0 || delayTime > 10 {
+			w.WriteHeader(http.StatusBadRequest)
+			json.NewEncoder(w).Encode(map[string]interface{}{
+				"error": "Delay time must be between 0 and 10 seconds",
+			})
 			return
 		}
 
-		// 验证延迟时间
-		if delayTime < 0 || delayTime > 10 {
-			http.Error(w, "Delay time must be between 0 and 10 seconds", http.StatusBadRequest)
-			return
-		}
-
-		// 执行延迟
+		// 延迟执行
 		time.Sleep(time.Duration(delayTime) * time.Second)
 
-		// 返回响应
-		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(map[string]interface{}{
-			"message":   "延迟完成！",
+			"message":    "延迟完成！",
 			"delay_time": delayTime,
 			"timestamp":  time.Now(),
 		})
 
 	default:
-		http.NotFound(w, r)
+		w.WriteHeader(http.StatusNotFound)
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"error": "Not Found",
+		})
 	}
 }

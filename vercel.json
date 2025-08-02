@@ -9,13 +9,7 @@
   "routes": [
     {
       "src": "/(.*)",
-      "dest": "/api/index.go",
-      "headers": {
-        "Access-Control-Allow-Origin": "*",
-        "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
-        "Access-Control-Allow-Headers": "Origin, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization",
-        "Access-Control-Max-Age": "86400"
-      }
+      "dest": "/api/index.go"
     }
   ]
 }
